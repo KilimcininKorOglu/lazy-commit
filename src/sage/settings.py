@@ -8,7 +8,9 @@ dotenv.load_dotenv()
 
 
 class SmartCommitSettings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", env_ignore_empty=True, extra="ignore")
+    model_config = SettingsConfigDict(
+        env_file=".env", env_ignore_empty=True, extra="ignore"
+    )
 
     LAZY_COMMIT_OPENAI_BASE_URL: str | None = Field(
         default=None,
@@ -19,13 +21,17 @@ class SmartCommitSettings(BaseSettings):
         """,
     )
     LAZY_COMMIT_OPENAI_API_KEY: SecretStr | None = Field(
-        default=None, description="When calling the local model, this value can be empty"
+        default=None,
+        description="When calling the local model, this value can be empty",
     )
     LAZY_COMMIT_OPENAI_MODEL_NAME: str | None = Field(
-        default=None, description="When calling the local model, this value can be empty"
+        default=None,
+        description="When calling the local model, this value can be empty",
     )
     LAZY_COMMIT_MAX_CONTEXT_SIZE: int = Field(
-        default=32000, description="Maximum context length (number of characters), 30k", gt=512
+        default=32000,
+        description="Maximum context length (number of characters), 30k",
+        gt=512,
     )
     LAZY_COMMIT_BYPASS_PROXY: bool = Field(
         default=False,
@@ -37,9 +43,10 @@ class SmartCommitSettings(BaseSettings):
     )
 
     def model_post_init(self, context: Any, /) -> None:
-        if not self.LAZY_COMMIT_OPENAI_BASE_URL or self.LAZY_COMMIT_OPENAI_BASE_URL in [
-            "https://api.openai.com/v1"
-        ]:
+        if (
+            not self.LAZY_COMMIT_OPENAI_BASE_URL
+            or self.LAZY_COMMIT_OPENAI_BASE_URL in ["https://api.openai.com/v1"]
+        ):
             if not self.LAZY_COMMIT_OPENAI_MODEL_NAME:
                 self.LAZY_COMMIT_OPENAI_MODEL_NAME = "gpt-4.1-mini"
 

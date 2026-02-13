@@ -1,7 +1,7 @@
 [project]
-name = "lazy-commit"
+name = "sage-commit"
 version = "0.1.8"
-description = "A git commit message generator for personal use."
+description = "A smart git commit message generator powered by AI."
 readme = "README.md"
 authors = [
     { name = "QIN2DIM", email = "yaoqinse@gmail.com" }
@@ -23,11 +23,11 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project.scripts]
-commit = "smart_commit.cli:app"
+sage = "sage.cli:app"
 
 # https://hatch.pypa.io/latest/config/build/#explicit-selection
 [tool.hatch.build.targets.sdist]
-only-include = ["src/smart_commit"]
+only-include = ["src/sage"]
 exclude = [
     "_archive/*.py",
     'tests/',
@@ -37,7 +37,7 @@ exclude = [
 
 # https://hatch.pypa.io/latest/config/build/#packages
 [tool.hatch.build.targets.wheel]
-packages = ["src/smart_commit"]
+packages = ["src/sage"]
 
 [tool.hatch.version]
 source = "uv-dynamic-versioning"

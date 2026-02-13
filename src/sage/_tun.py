@@ -9,7 +9,7 @@ from urllib.parse import urlparse
 
 import httpx
 
-from smart_commit.settings import settings
+from sage.settings import settings
 
 
 # ======================== LAN Proxy Bypass Configuration ======================== #

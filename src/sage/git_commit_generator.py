@@ -28,11 +28,11 @@ from openai.types.chat import (
 from rich.console import Console
 from rich.text import Text
 
-from smart_commit.models import CommitMessage, LLMInput
-from smart_commit.prompts import SYSTEM_INSTRUCTIONS, USER_PROMPT_TEMPLATE
-from smart_commit.settings import settings
-from smart_commit._tun import get_lan_http_client
-from smart_commit.config import load_config, build_config_prompt
+from sage.models import CommitMessage, LLMInput
+from sage.prompts import SYSTEM_INSTRUCTIONS, USER_PROMPT_TEMPLATE
+from sage.settings import settings
+from sage._tun import get_lan_http_client
+from sage.config import load_config, build_config_prompt
 
 
 # Files to exclude from LLM analysis (diff generation) but still allow in commits

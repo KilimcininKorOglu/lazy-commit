@@ -32,7 +32,9 @@ class LLMInput(BaseModel):
     """Model for data passed to the LLM generation module."""
 
     git_branch_name: str = Field(...)
-    diff_content: str = Field(..., description="Formatted and potentially compressed git diff.")
+    diff_content: str = Field(
+        ..., description="Formatted and potentially compressed git diff."
+    )
     full_diff_for_reference: str | None = Field(
         default=None, description="The full, uncompressed diff."
     )
@@ -42,9 +44,13 @@ class CommitMessage(BaseModel):
     """Structured output for the generated commit message."""
 
     type: str = Field(..., description="Commit type (e.g., 'feat', 'fix').")
-    scope: str | None = Field(default=None, description="Optional scope of the changes.")
+    scope: str | None = Field(
+        default=None, description="Optional scope of the changes."
+    )
     title: str = Field(..., description="Short, imperative-mood title.")
-    body: str | None = Field(default=None, description="Detailed explanation of the changes.")
+    body: str | None = Field(
+        default=None, description="Detailed explanation of the changes."
+    )
 
     def to_git_message(self) -> str:
         """Formats the object into a git-commit-ready string."""
@@ -67,7 +73,9 @@ class CommitMessage(BaseModel):
 
         # Build the header line with type badge
         header_text = Text()
-        header_text.append(f" {type_style['icon']} ", style=f"bold {type_style['color']}")
+        header_text.append(
+            f" {type_style['icon']} ", style=f"bold {type_style['color']}"
+        )
         header_text.append(f"{self.type}", style=f"bold {type_style['color']}")
         if self.scope:
             header_text.append(f"({self.scope})", style="bold cyan")

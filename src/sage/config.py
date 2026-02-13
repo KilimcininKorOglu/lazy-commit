@@ -10,11 +10,11 @@ from rich.syntax import Syntax
 
 console = Console()
 
-CONFIG_FILENAME = ".lazy-commit.yaml"
+CONFIG_FILENAME = ".sage.yaml"
 GLOBAL_CONFIG_PATH = Path.home() / CONFIG_FILENAME
 
-DEFAULT_TEMPLATE = """# lazy-commit configuration
-# Documentation: https://github.com/QIN2DIM/lazy-commit
+DEFAULT_TEMPLATE = """# sage configuration
+# Documentation: https://github.com/QIN2DIM/sage-commit
 
 version: 1
 

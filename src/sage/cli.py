@@ -2,14 +2,14 @@ from typing import Optional
 
 import typer
 
-from smart_commit.changelog import ChangelogGenerator
-from smart_commit.config import init_config, show_config
-from smart_commit.git_commit_generator import GitCommitGenerator
-from smart_commit.hooks import HookManager
-from smart_commit.rewrite import CommitRewriter
-from smart_commit.scoring import CommitScorer
-from smart_commit.statistics import StatisticsAnalyzer
-from smart_commit.versioning import VersionCalculator
+from sage.changelog import ChangelogGenerator
+from sage.config import init_config, show_config
+from sage.git_commit_generator import GitCommitGenerator
+from sage.hooks import HookManager
+from sage.rewrite import CommitRewriter
+from sage.scoring import CommitScorer
+from sage.statistics import StatisticsAnalyzer
+from sage.versioning import VersionCalculator
 
 
 app = typer.Typer()
@@ -36,10 +36,10 @@ def main(
 
     \b
     Usage modes:
-      commit         Generate message only (copy to clipboard)
-      commit --add   Stage and commit changes
-      commit --push  Stage, commit and push changes
-      commit --lang tr  Generate in Turkish
+      sage         Generate message only (copy to clipboard)
+      sage --add   Stage and commit changes
+      sage --push  Stage, commit and push changes
+      sage --lang tr  Generate in Turkish
     """
     if push:
         add = True
@@ -56,7 +56,7 @@ def hook_install(
     ),
     force: bool = typer.Option(False, "--force", "-f", help="Overwrite existing hook"),
 ):
-    """Install lazy-commit as a git hook."""
+    """Install sage as a git hook."""
     manager = HookManager()
     manager.install(hook_type=hook_type, force=force)
 
@@ -67,7 +67,7 @@ def hook_uninstall(
         "prepare-commit-msg", "--type", "-t", help="Hook type to uninstall"
     ),
 ):
-    """Remove lazy-commit git hook."""
+    """Remove sage git hook."""
     manager = HookManager()
     manager.uninstall(hook_type=hook_type)
 
@@ -103,10 +103,10 @@ def changelog(
 
     \b
     Usage:
-      commit changelog                    Generate changelog from latest tag
-      commit changelog --from v0.1.0      Generate from specific version
-      commit changelog --next-version v0.2.0  Set next version name
-      commit changelog --dry-run          Preview without writing
+      sage changelog                    Generate changelog from latest tag
+      sage changelog --from v0.1.0      Generate from specific version
+      sage changelog --next-version v0.2.0  Set next version name
+      sage changelog --dry-run          Preview without writing
     """
     generator = ChangelogGenerator()
     generator.run(
@@ -135,11 +135,11 @@ def version(
 
     \b
     Usage:
-      commit version                  Show next version
-      commit version --bump           Apply version bump and create tag
-      commit version --bump --type minor  Force minor version bump
-      commit version --bump --pre alpha   Create pre-release version
-      commit version --bump --dry-run     Preview without applying
+      sage version                  Show next version
+      sage version --bump           Apply version bump and create tag
+      sage version --bump --type minor  Force minor version bump
+      sage version --bump --pre alpha   Create pre-release version
+      sage version --bump --dry-run     Preview without applying
     """
     calculator = VersionCalculator()
     calculator.run(
@@ -164,11 +164,11 @@ def score(
 
     \b
     Usage:
-      commit score              Analyze last commit
-      commit score -n 10        Analyze last 10 commits
-      commit score --all        Analyze all commits
-      commit score abc123       Analyze specific commit
-      commit score --json       Output as JSON
+      sage score              Analyze last commit
+      sage score -n 10        Analyze last 10 commits
+      sage score --all        Analyze all commits
+      sage score abc123       Analyze specific commit
+      sage score --json       Output as JSON
     """
     scorer = CommitScorer()
     scorer.run(
@@ -186,12 +186,12 @@ def init_command(
     ),
 ):
     """
-    Create a .lazy-commit.yaml configuration file.
+    Create a .sage.yaml configuration file.
 
     \b
     Usage:
-      commit init           Create config file
-      commit init --force   Overwrite existing config
+      sage init           Create config file
+      sage init --force   Overwrite existing config
     """
     init_config(force=force)
 
@@ -205,7 +205,7 @@ def config_command(
 
     \b
     Usage:
-      commit config         Show merged configuration
+      sage config         Show merged configuration
     """
     if show:
         show_config()
@@ -230,10 +230,10 @@ def rewrite(
 
     \b
     Usage:
-      commit rewrite              Rewrite last commit
-      commit rewrite -n 5         Rewrite last 5 commits
-      commit rewrite --dry-run    Preview without applying
-      commit rewrite -i           Interactive mode (confirm each)
+      sage rewrite              Rewrite last commit
+      sage rewrite -n 5         Rewrite last 5 commits
+      sage rewrite --dry-run    Preview without applying
+      sage rewrite -i           Interactive mode (confirm each)
 
     WARNING: This rewrites git history. Use with caution!
     """
@@ -267,12 +267,12 @@ def stats(
 
     \b
     Usage:
-      commit stats                  Basic statistics
-      commit stats --detailed       Detailed report
-      commit stats --by-author      Contributor breakdown
-      commit stats --since 2025-01-01  Filter by date
-      commit stats --json           JSON output
-      commit stats -o report.md     Save as markdown
+      sage stats                  Basic statistics
+      sage stats --detailed       Detailed report
+      sage stats --by-author      Contributor breakdown
+      sage stats --since 2025-01-01  Filter by date
+      sage stats --json           JSON output
+      sage stats -o report.md     Save as markdown
     """
     analyzer = StatisticsAnalyzer()
     analyzer.run(

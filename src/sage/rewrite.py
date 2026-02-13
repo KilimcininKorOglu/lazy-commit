@@ -14,10 +14,10 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.prompt import Prompt
 
-from smart_commit.models import CommitMessage
-from smart_commit.prompts import SYSTEM_INSTRUCTIONS
-from smart_commit.settings import settings
-from smart_commit._tun import get_lan_http_client
+from sage.models import CommitMessage
+from sage.prompts import SYSTEM_INSTRUCTIONS
+from sage.settings import settings
+from sage._tun import get_lan_http_client
 
 console = Console()
 
