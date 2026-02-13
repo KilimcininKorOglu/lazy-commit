@@ -20,6 +20,12 @@ app.add_typer(hook_app, name="hook")
 def main(
     push: bool = typer.Option(False, "--push", "-p", help="Auto-push after commit"),
     add: bool = typer.Option(False, "--add", "-a", help="Stage and commit changes"),
+    lang: Optional[str] = typer.Option(
+        None,
+        "--lang",
+        "-l",
+        help="Language for commit message (en, tr, ja, zh, de, fr, es, pt, ko, ru)",
+    ),
     hook_mode: bool = typer.Option(
         False, "--hook-mode", hidden=True, help="Output message only for git hook"
     ),
@@ -32,10 +38,13 @@ def main(
       commit         Generate message only (copy to clipboard)
       commit --add   Stage and commit changes
       commit --push  Stage, commit and push changes
+      commit --lang tr  Generate in Turkish
     """
     if push:
         add = True
-    generator = GitCommitGenerator(auto_push=push, auto_add=add, hook_mode=hook_mode)
+    generator = GitCommitGenerator(
+        auto_push=push, auto_add=add, hook_mode=hook_mode, language=lang
+    )
     generator.run()
 
 

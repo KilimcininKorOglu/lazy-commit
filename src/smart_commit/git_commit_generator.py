@@ -54,7 +54,11 @@ class GitCommitGenerator:
     """A class to generate git commit messages."""
 
     def __init__(
-        self, auto_push: bool = False, auto_add: bool = False, hook_mode: bool = False
+        self,
+        auto_push: bool = False,
+        auto_add: bool = False,
+        hook_mode: bool = False,
+        language: Optional[str] = None,
     ):
         """
         Initializes the generator. Automatically finds the git repository root.
@@ -63,8 +67,10 @@ class GitCommitGenerator:
             auto_push: Automatically push after commit.
             auto_add: Automatically stage and commit.
             hook_mode: Output message only for git hook integration.
+            language: Language for commit message (overrides config).
         """
         self.hook_mode = hook_mode
+        self.language = language
 
         if hook_mode:
             self.repo_path = self._find_git_root()
@@ -182,6 +188,8 @@ class GitCommitGenerator:
             )
 
             config = load_config()
+            if self.language:
+                config.ai.language = self.language
             config_prompt = build_config_prompt(config)
             system_prompt = SYSTEM_INSTRUCTIONS
             if config_prompt:

@@ -212,9 +212,28 @@ def build_config_prompt(config: LazyCommitConfig) -> str:
         )
 
     if config.ai.language != "en":
-        parts.append(f"Write the commit message in {config.ai.language}.")
+        lang_instruction = get_language_instruction(config.ai.language)
+        parts.append(lang_instruction)
 
     if config.ai.instructions:
         parts.append(f"Additional instructions:\n{config.ai.instructions}")
 
     return "\n".join(parts) if parts else ""
+
+
+LANGUAGE_INSTRUCTIONS = {
+    "en": "Write the commit message in English.",
+    "tr": "Commit mesajini Turkce yaz. Type ve scope Ingilizce kalsin.",
+    "ja": "コミットメッセージを日本語で書いてください。TypeとScopeは英語のままにしてください。",
+    "zh": "用中文写提交信息。Type和Scope保持英文。",
+    "de": "Schreibe die Commit-Nachricht auf Deutsch. Type und Scope bleiben auf Englisch.",
+    "fr": "Écrivez le message de commit en français. Type et scope restent en anglais.",
+    "es": "Escribe el mensaje de commit en español. Type y scope permanecen en inglés.",
+    "pt": "Escreva a mensagem de commit em português. Type e scope permanecem em inglês.",
+    "ko": "커밋 메시지를 한국어로 작성하세요. Type과 Scope는 영어로 유지하세요.",
+    "ru": "Напишите сообщение коммита на русском языке. Type и scope остаются на английском.",
+}
+
+
+def get_language_instruction(lang: str) -> str:
+    return LANGUAGE_INSTRUCTIONS.get(lang, LANGUAGE_INSTRUCTIONS["en"])
