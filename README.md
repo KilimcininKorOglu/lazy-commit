@@ -18,6 +18,7 @@ A smart git commit message generator that uses AI to create high-quality commit 
 - Quality Scoring: Analyze commit message quality with detailed feedback
 - Project Configuration: Customize behavior with .lazy-commit.yaml
 - History Rewrite: Rewrite old commit messages with AI
+- Multi-Language: Generate commit messages in 10 different languages
 
 ## Installation
 
@@ -285,6 +286,32 @@ Configuration loading order (later overrides earlier):
 1. Default values
 2. Global config: `~/.lazy-commit.yaml`
 3. Project config: `.lazy-commit.yaml`
+
+### Multi-Language Support
+
+Generate commit messages in different languages:
+
+```bash
+# Turkish
+commit --lang tr
+
+# Japanese
+commit --lang ja
+
+# German
+commit --lang de
+```
+
+Supported languages: `en`, `tr`, `ja`, `zh`, `de`, `fr`, `es`, `pt`, `ko`, `ru`
+
+You can also set the default language in `.lazy-commit.yaml`:
+
+```yaml
+ai:
+  language: tr
+```
+
+Note: Type and scope always remain in English (conventional commits standard).
 
 ### Rewrite Commit History
 
