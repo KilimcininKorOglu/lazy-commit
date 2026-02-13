@@ -1,5 +1,8 @@
+from typing import Optional
+
 import typer
 
+from smart_commit.changelog import ChangelogGenerator
 from smart_commit.git_commit_generator import GitCommitGenerator
 
 
@@ -20,12 +23,44 @@ def main(
       commit --add   Stage and commit changes
       commit --push  Stage, commit and push changes
     """
-    # When push is enabled, add is automatically enabled
     if push:
         add = True
-    # GitCommitGenerator._find_git_root() handles finding git root from any subdirectory
     generator = GitCommitGenerator(auto_push=push, auto_add=add)
     generator.run()
+
+
+@app.command()
+def changelog(
+    from_version: Optional[str] = typer.Option(
+        None, "--from", "-f", help="Starting version/tag"
+    ),
+    next_version: Optional[str] = typer.Option(
+        None, "--next-version", "-n", help="Next version name"
+    ),
+    dry_run: bool = typer.Option(
+        False, "--dry-run", help="Only display, don't write to file"
+    ),
+    output: str = typer.Option(
+        "CHANGELOG.md", "--output", "-o", help="Output file path"
+    ),
+):
+    """
+    Generate changelog from conventional commits.
+
+    \b
+    Usage:
+      commit changelog                    Generate changelog from latest tag
+      commit changelog --from v0.1.0      Generate from specific version
+      commit changelog --next-version v0.2.0  Set next version name
+      commit changelog --dry-run          Preview without writing
+    """
+    generator = ChangelogGenerator()
+    generator.run(
+        from_version=from_version,
+        next_version=next_version,
+        dry_run=dry_run,
+        output=output,
+    )
 
 
 if __name__ == "__main__":
