@@ -4,6 +4,7 @@ import typer
 
 from smart_commit.changelog import ChangelogGenerator
 from smart_commit.git_commit_generator import GitCommitGenerator
+from smart_commit.versioning import VersionCalculator
 
 
 app = typer.Typer()
@@ -60,6 +61,39 @@ def changelog(
         next_version=next_version,
         dry_run=dry_run,
         output=output,
+    )
+
+
+@app.command()
+def version(
+    bump: bool = typer.Option(False, "--bump", "-b", help="Apply version bump"),
+    version_type: Optional[str] = typer.Option(
+        None, "--type", "-t", help="Force version type: major/minor/patch"
+    ),
+    pre: Optional[str] = typer.Option(
+        None, "--pre", help="Pre-release label (alpha, beta, rc)"
+    ),
+    dry_run: bool = typer.Option(
+        False, "--dry-run", help="Show changes without applying"
+    ),
+):
+    """
+    Calculate and bump semantic version based on commits.
+
+    \b
+    Usage:
+      commit version                  Show next version
+      commit version --bump           Apply version bump and create tag
+      commit version --bump --type minor  Force minor version bump
+      commit version --bump --pre alpha   Create pre-release version
+      commit version --bump --dry-run     Preview without applying
+    """
+    calculator = VersionCalculator()
+    calculator.run(
+        bump=bump,
+        version_type=version_type,
+        prerelease=pre,
+        dry_run=dry_run,
     )
 
 
