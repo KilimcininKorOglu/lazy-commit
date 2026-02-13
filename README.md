@@ -13,6 +13,9 @@ A smart git commit message generator that uses AI to create high-quality commit 
 - Rich UI: Beautiful command-line interface with progress bars and status indicators
 - File Status Display: Shows modified, added, and deleted files with clear indicators
 - Changelog Generation: Automatically generate CHANGELOG.md from conventional commits
+- Semantic Versioning: Calculate and bump versions based on commit types
+- Git Hooks: Install as a git hook for automatic commit message generation
+- Quality Scoring: Analyze commit message quality with detailed feedback
 
 ## Installation
 
@@ -143,6 +146,98 @@ commit changelog --next-version v0.2.0
 # Preview without writing
 commit changelog --dry-run
 ```
+
+### Semantic Versioning
+
+Calculate and bump version based on conventional commits:
+
+```bash
+commit version
+```
+
+Options:
+- `--bump`, `-b`: Apply version bump and create git tag
+- `--type`, `-t`: Force version type (major/minor/patch)
+- `--pre`: Pre-release label (alpha, beta, rc)
+- `--dry-run`: Preview without applying
+
+Examples:
+
+```bash
+# Show next version
+commit version
+
+# Apply version bump and create tag
+commit version --bump
+
+# Force minor version bump
+commit version --bump --type minor
+
+# Create pre-release version
+commit version --bump --pre alpha
+```
+
+Version bump rules:
+- Breaking changes (`!` or `BREAKING CHANGE:`) -> Major
+- New features (`feat:`) -> Minor
+- Bug fixes and others -> Patch
+
+### Git Hooks
+
+Install lazy-commit as a git hook for automatic commit message generation:
+
+```bash
+# Install hook
+commit hook install
+
+# Uninstall hook
+commit hook uninstall
+
+# Check hook status
+commit hook status
+```
+
+Options:
+- `--type`, `-t`: Hook type (default: prepare-commit-msg)
+- `--force`, `-f`: Overwrite existing hook
+
+### Quality Scoring
+
+Analyze commit message quality:
+
+```bash
+commit score
+```
+
+Options:
+- `-n`, `--count`: Number of commits to analyze
+- `--all`: Analyze all commits
+- `--json`: Output as JSON
+
+Examples:
+
+```bash
+# Analyze last commit
+commit score
+
+# Analyze last 10 commits
+commit score -n 10
+
+# Analyze specific commit
+commit score abc123
+
+# Output as JSON
+commit score --json
+```
+
+Scoring criteria (100 points):
+- Type present and valid (30 points)
+- Scope present (10 points)
+- Title length 10-72 chars (15 points)
+- Imperative mood (15 points)
+- Body present (10 points)
+- Breaking change marked (10 points)
+- Issue reference (10 points)
 
 ## How It Works
 
