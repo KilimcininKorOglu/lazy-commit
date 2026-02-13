@@ -8,6 +8,7 @@ from smart_commit.git_commit_generator import GitCommitGenerator
 from smart_commit.hooks import HookManager
 from smart_commit.rewrite import CommitRewriter
 from smart_commit.scoring import CommitScorer
+from smart_commit.statistics import StatisticsAnalyzer
 from smart_commit.versioning import VersionCalculator
 
 
@@ -243,6 +244,44 @@ def rewrite(
         dry_run=dry_run,
         interactive=interactive,
         force=force,
+    )
+
+
+@app.command()
+def stats(
+    detailed: bool = typer.Option(
+        False, "--detailed", "-d", help="Show detailed report"
+    ),
+    since: Optional[str] = typer.Option(
+        None, "--since", help="Start date (YYYY-MM-DD)"
+    ),
+    until: Optional[str] = typer.Option(None, "--until", help="End date (YYYY-MM-DD)"),
+    by_author: bool = typer.Option(False, "--by-author", help="Show contributor stats"),
+    json_output: bool = typer.Option(False, "--json", help="Output as JSON"),
+    output: Optional[str] = typer.Option(
+        None, "--output", "-o", help="Save report to file"
+    ),
+):
+    """
+    Show commit statistics and analysis.
+
+    \b
+    Usage:
+      commit stats                  Basic statistics
+      commit stats --detailed       Detailed report
+      commit stats --by-author      Contributor breakdown
+      commit stats --since 2025-01-01  Filter by date
+      commit stats --json           JSON output
+      commit stats -o report.md     Save as markdown
+    """
+    analyzer = StatisticsAnalyzer()
+    analyzer.run(
+        detailed=detailed,
+        since=since,
+        until=until,
+        by_author=by_author,
+        json_output=json_output,
+        output=output,
     )
 
 
