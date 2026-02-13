@@ -3,6 +3,7 @@ from typing import Optional
 import typer
 
 from smart_commit.changelog import ChangelogGenerator
+from smart_commit.config import init_config, show_config
 from smart_commit.git_commit_generator import GitCommitGenerator
 from smart_commit.hooks import HookManager
 from smart_commit.scoring import CommitScorer
@@ -165,6 +166,38 @@ def score(
         all_commits=all_commits,
         json_output=json_output,
     )
+
+
+@app.command("init")
+def init_command(
+    force: bool = typer.Option(
+        False, "--force", "-f", help="Overwrite existing config"
+    ),
+):
+    """
+    Create a .lazy-commit.yaml configuration file.
+
+    \b
+    Usage:
+      commit init           Create config file
+      commit init --force   Overwrite existing config
+    """
+    init_config(force=force)
+
+
+@app.command("config")
+def config_command(
+    show: bool = typer.Option(True, "--show", help="Show current configuration"),
+):
+    """
+    Show current configuration.
+
+    \b
+    Usage:
+      commit config         Show merged configuration
+    """
+    if show:
+        show_config()
 
 
 if __name__ == "__main__":

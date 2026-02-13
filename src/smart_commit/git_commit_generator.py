@@ -32,6 +32,7 @@ from smart_commit.models import CommitMessage, LLMInput
 from smart_commit.prompts import SYSTEM_INSTRUCTIONS, USER_PROMPT_TEMPLATE
 from smart_commit.settings import settings
 from smart_commit._tun import get_lan_http_client
+from smart_commit.config import load_config, build_config_prompt
 
 
 # Files to exclude from LLM analysis (diff generation) but still allow in commits
@@ -179,10 +180,15 @@ class GitCommitGenerator:
                 branch_name=llm_input.git_branch_name,
                 diff_content=llm_input.diff_content,
             )
+
+            config = load_config()
+            config_prompt = build_config_prompt(config)
+            system_prompt = SYSTEM_INSTRUCTIONS
+            if config_prompt:
+                system_prompt += f"\n\n{config_prompt}"
+
             messages = [
-                ChatCompletionSystemMessageParam(
-                    role="system", content=SYSTEM_INSTRUCTIONS
-                ),
+                ChatCompletionSystemMessageParam(role="system", content=system_prompt),
                 ChatCompletionUserMessageParam(role="user", content=user_prompt),
             ]
 
