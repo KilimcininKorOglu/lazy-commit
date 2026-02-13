@@ -4,14 +4,15 @@ A smart git commit message generator that uses AI to create high-quality commit 
 
 ## Features
 
-- 🤖 **AI-Powered**: Uses OpenAI-compatible APIs to generate intelligent commit messages
-- 📝 **Conventional Commits**: Follows the Conventional Commits specification format
-- 🎯 **Smart File Analysis**: Automatically analyzes changed files and generates appropriate diffs
-- 🚫 **Intelligent Filtering**: Excludes lock files and binary files from analysis while still including them in commits
-- ⚡ **Context Compression**: Automatically compresses large diffs to fit within token limits
-- 🔄 **Auto-Push Support**: Optional automatic push to remote repository after commit
-- 🎨 **Rich UI**: Beautiful command-line interface with progress bars and status indicators
-- 📊 **File Status Display**: Shows modified, added, and deleted files with clear indicators
+- AI-Powered: Uses OpenAI-compatible APIs to generate intelligent commit messages
+- Conventional Commits: Follows the Conventional Commits specification format
+- Smart File Analysis: Automatically analyzes changed files and generates appropriate diffs
+- Intelligent Filtering: Excludes lock files and binary files from analysis while still including them in commits
+- Context Compression: Automatically compresses large diffs to fit within token limits
+- Auto-Push Support: Optional automatic push to remote repository after commit
+- Rich UI: Beautiful command-line interface with progress bars and status indicators
+- File Status Display: Shows modified, added, and deleted files with clear indicators
+- Changelog Generation: Automatically generate CHANGELOG.md from conventional commits
 
 ## Installation
 
@@ -112,6 +113,36 @@ commit --push
 ```
 
 Note: When `--push` is enabled, `--add` is automatically enabled.
+
+### Generate Changelog
+
+Generate a changelog from conventional commits:
+
+```bash
+commit changelog
+```
+
+Options:
+- `--from`, `-f`: Starting version/tag (default: latest tag)
+- `--next-version`, `-n`: Next version name (default: "Unreleased")
+- `--dry-run`: Preview without writing to file
+- `--output`, `-o`: Output file path (default: CHANGELOG.md)
+
+Examples:
+
+```bash
+# Generate changelog from latest tag
+commit changelog
+
+# Generate from specific version
+commit changelog --from v0.1.0
+
+# Set next version name
+commit changelog --next-version v0.2.0
+
+# Preview without writing
+commit changelog --dry-run
+```
 
 ## How It Works
 
