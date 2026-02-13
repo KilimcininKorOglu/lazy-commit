@@ -16,6 +16,7 @@ A smart git commit message generator that uses AI to create high-quality commit 
 - Semantic Versioning: Calculate and bump versions based on commit types
 - Git Hooks: Install as a git hook for automatic commit message generation
 - Quality Scoring: Analyze commit message quality with detailed feedback
+- Project Configuration: Customize behavior with .lazy-commit.yaml
 
 ## Installation
 
@@ -238,6 +239,51 @@ Scoring criteria (100 points):
 - Body present (10 points)
 - Breaking change marked (10 points)
 - Issue reference (10 points)
+
+### Project Configuration
+
+Create a `.lazy-commit.yaml` file to customize behavior:
+
+```bash
+# Create config file
+commit init
+
+# Show current configuration
+commit config
+```
+
+Example `.lazy-commit.yaml`:
+
+```yaml
+version: 1
+
+format:
+  # Restrict allowed types
+  types: [feat, fix, docs, style, refactor, perf, test, build, ci, chore]
+  
+  # Define allowed scopes
+  scopes: [api, ui, db, core]
+  
+  require_scope: false
+  require_body: false
+  max_title_length: 72
+  require_issue_ref: false
+
+ai:
+  language: en
+  # instructions: |
+  #   - Custom instruction 1
+  #   - Custom instruction 2
+
+exclude:
+  - "*.lock"
+  - "*.ipynb"
+```
+
+Configuration loading order (later overrides earlier):
+1. Default values
+2. Global config: `~/.lazy-commit.yaml`
+3. Project config: `.lazy-commit.yaml`
 
 ## How It Works
 
