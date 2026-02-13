@@ -6,6 +6,7 @@ from smart_commit.changelog import ChangelogGenerator
 from smart_commit.config import init_config, show_config
 from smart_commit.git_commit_generator import GitCommitGenerator
 from smart_commit.hooks import HookManager
+from smart_commit.rewrite import CommitRewriter
 from smart_commit.scoring import CommitScorer
 from smart_commit.versioning import VersionCalculator
 
@@ -198,6 +199,42 @@ def config_command(
     """
     if show:
         show_config()
+
+
+@app.command()
+def rewrite(
+    count: int = typer.Option(1, "-n", "--count", help="Number of commits to rewrite"),
+    from_commit: Optional[str] = typer.Option(
+        None, "--from", help="Rewrite from this commit"
+    ),
+    dry_run: bool = typer.Option(False, "--dry-run", help="Preview without applying"),
+    interactive: bool = typer.Option(
+        False, "-i", "--interactive", help="Confirm each commit"
+    ),
+    force: bool = typer.Option(
+        False, "--force", "-f", help="Allow rewriting pushed commits"
+    ),
+):
+    """
+    Rewrite commit messages using AI.
+
+    \b
+    Usage:
+      commit rewrite              Rewrite last commit
+      commit rewrite -n 5         Rewrite last 5 commits
+      commit rewrite --dry-run    Preview without applying
+      commit rewrite -i           Interactive mode (confirm each)
+
+    WARNING: This rewrites git history. Use with caution!
+    """
+    rewriter = CommitRewriter()
+    rewriter.run(
+        count=count,
+        from_commit=from_commit,
+        dry_run=dry_run,
+        interactive=interactive,
+        force=force,
+    )
 
 
 if __name__ == "__main__":
