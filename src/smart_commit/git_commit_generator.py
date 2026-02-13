@@ -14,7 +14,7 @@ from typing import List, Optional
 import pyperclip
 import tiktoken
 import typer
-from openai import OpenAI
+from openai import OpenAI, APIConnectionError, AuthenticationError, RateLimitError, APIStatusError
 from openai.types.chat import ChatCompletionSystemMessageParam, ChatCompletionUserMessageParam
 from rich.console import Console
 from rich.text import Text
@@ -120,11 +120,12 @@ class GitCommitGenerator:
 
     @staticmethod
     def _count_tokens(text: str) -> int:
-        # tiktoken.encoding_for_model(self._model)
-
-        # Inaccurate value
-        enc = tiktoken.get_encoding("o200k_base")
-        return len(enc.encode(text))
+        try:
+            enc = tiktoken.get_encoding("o200k_base")
+            return len(enc.encode(text))
+        except Exception:
+            # Fallback: estimate ~4 chars per token for unknown models
+            return len(text) // 4
 
     @staticmethod
     def _format_file_status(file_path: str, status: str) -> Text:
@@ -154,13 +155,27 @@ class GitCommitGenerator:
                 ChatCompletionUserMessageParam(role="user", content=user_prompt),
             ]
 
-            completion = self._client.chat.completions.parse(
-                model=self._model,
-                messages=messages,
-                response_format=CommitMessage,
-                temperature=0,
-                timeout=50,
-            )
+            try:
+                completion = self._client.chat.completions.parse(
+                    model=self._model,
+                    messages=messages,
+                    response_format=CommitMessage,
+                    temperature=0,
+                    timeout=50,
+                )
+            except AuthenticationError:
+                console.print("[red]✗[/red] Invalid API key. Please check LAZY_COMMIT_OPENAI_API_KEY.")
+                return None
+            except RateLimitError:
+                console.print("[red]✗[/red] Rate limited. Please try again later.")
+                return None
+            except APIConnectionError:
+                console.print("[red]✗[/red] Network error. Please check your internet connection.")
+                return None
+            except APIStatusError as e:
+                console.print(f"[red]✗[/red] API error: {e.message}")
+                return None
+
         console.print("[green]✓[/green] Commit message generated successfully")
         return completion.choices[0].message.parsed
 
