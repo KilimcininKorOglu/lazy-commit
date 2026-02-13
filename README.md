@@ -19,6 +19,7 @@ A smart git commit message generator that uses AI to create high-quality commit 
 - Project Configuration: Customize behavior with .lazy-commit.yaml
 - History Rewrite: Rewrite old commit messages with AI
 - Multi-Language: Generate commit messages in 10 different languages
+- Statistics: Analyze commit patterns and generate reports
 
 ## Installation
 
@@ -345,6 +346,41 @@ commit rewrite -n 3 -i
 ```
 
 WARNING: This rewrites git history. A backup branch is created automatically.
+
+### Commit Statistics
+
+Analyze commit patterns and generate reports:
+
+```bash
+commit stats
+```
+
+Options:
+- `-d`, `--detailed`: Show detailed report with weekday activity
+- `--since`: Filter commits from date (YYYY-MM-DD)
+- `--until`: Filter commits until date
+- `--by-author`: Show contributor breakdown
+- `--json`: Output as JSON
+- `-o`, `--output`: Save report as markdown file
+
+Examples:
+
+```bash
+# Basic statistics
+commit stats
+
+# Detailed report with contributor stats
+commit stats --detailed --by-author
+
+# Filter by date range
+commit stats --since 2025-01-01 --until 2025-06-30
+
+# Export as JSON
+commit stats --json
+
+# Save markdown report
+commit stats -o report.md
+```
 
 ## How It Works
 
