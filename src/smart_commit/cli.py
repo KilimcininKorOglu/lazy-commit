@@ -5,6 +5,7 @@ import typer
 from smart_commit.changelog import ChangelogGenerator
 from smart_commit.git_commit_generator import GitCommitGenerator
 from smart_commit.hooks import HookManager
+from smart_commit.scoring import CommitScorer
 from smart_commit.versioning import VersionCalculator
 
 
@@ -134,6 +135,35 @@ def version(
         version_type=version_type,
         prerelease=pre,
         dry_run=dry_run,
+    )
+
+
+@app.command()
+def score(
+    commit_ref: Optional[str] = typer.Argument(
+        None, help="Commit hash or ref to analyze"
+    ),
+    count: int = typer.Option(1, "-n", "--count", help="Number of commits to analyze"),
+    all_commits: bool = typer.Option(False, "--all", help="Analyze all commits"),
+    json_output: bool = typer.Option(False, "--json", help="Output as JSON"),
+):
+    """
+    Analyze commit message quality and provide a score.
+
+    \b
+    Usage:
+      commit score              Analyze last commit
+      commit score -n 10        Analyze last 10 commits
+      commit score --all        Analyze all commits
+      commit score abc123       Analyze specific commit
+      commit score --json       Output as JSON
+    """
+    scorer = CommitScorer()
+    scorer.run(
+        commit_ref=commit_ref,
+        count=count,
+        all_commits=all_commits,
+        json_output=json_output,
     )
 
 
