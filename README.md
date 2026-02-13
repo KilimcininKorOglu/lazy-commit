@@ -17,6 +17,7 @@ A smart git commit message generator that uses AI to create high-quality commit 
 - Git Hooks: Install as a git hook for automatic commit message generation
 - Quality Scoring: Analyze commit message quality with detailed feedback
 - Project Configuration: Customize behavior with .lazy-commit.yaml
+- History Rewrite: Rewrite old commit messages with AI
 
 ## Installation
 
@@ -284,6 +285,39 @@ Configuration loading order (later overrides earlier):
 1. Default values
 2. Global config: `~/.lazy-commit.yaml`
 3. Project config: `.lazy-commit.yaml`
+
+### Rewrite Commit History
+
+Rewrite old commit messages using AI:
+
+```bash
+commit rewrite
+```
+
+Options:
+- `-n`, `--count`: Number of commits to rewrite
+- `--from`: Rewrite from specific commit
+- `--dry-run`: Preview without applying
+- `-i`, `--interactive`: Confirm each commit
+- `--force`, `-f`: Allow rewriting pushed commits
+
+Examples:
+
+```bash
+# Rewrite last commit
+commit rewrite
+
+# Rewrite last 5 commits
+commit rewrite -n 5
+
+# Preview without applying
+commit rewrite --dry-run
+
+# Interactive mode
+commit rewrite -n 3 -i
+```
+
+WARNING: This rewrites git history. A backup branch is created automatically.
 
 ## How It Works
 
