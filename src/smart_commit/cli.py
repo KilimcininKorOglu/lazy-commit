@@ -4,16 +4,22 @@ import typer
 
 from smart_commit.changelog import ChangelogGenerator
 from smart_commit.git_commit_generator import GitCommitGenerator
+from smart_commit.hooks import HookManager
 from smart_commit.versioning import VersionCalculator
 
 
 app = typer.Typer()
+hook_app = typer.Typer(help="Manage git hooks")
+app.add_typer(hook_app, name="hook")
 
 
 @app.command()
 def main(
     push: bool = typer.Option(False, "--push", "-p", help="Auto-push after commit"),
     add: bool = typer.Option(False, "--add", "-a", help="Stage and commit changes"),
+    hook_mode: bool = typer.Option(
+        False, "--hook-mode", hidden=True, help="Output message only for git hook"
+    ),
 ):
     """
     Generate smart git commit messages with AI.
@@ -26,8 +32,42 @@ def main(
     """
     if push:
         add = True
-    generator = GitCommitGenerator(auto_push=push, auto_add=add)
+    generator = GitCommitGenerator(auto_push=push, auto_add=add, hook_mode=hook_mode)
     generator.run()
+
+
+@hook_app.command("install")
+def hook_install(
+    hook_type: str = typer.Option(
+        "prepare-commit-msg", "--type", "-t", help="Hook type to install"
+    ),
+    force: bool = typer.Option(False, "--force", "-f", help="Overwrite existing hook"),
+):
+    """Install lazy-commit as a git hook."""
+    manager = HookManager()
+    manager.install(hook_type=hook_type, force=force)
+
+
+@hook_app.command("uninstall")
+def hook_uninstall(
+    hook_type: str = typer.Option(
+        "prepare-commit-msg", "--type", "-t", help="Hook type to uninstall"
+    ),
+):
+    """Remove lazy-commit git hook."""
+    manager = HookManager()
+    manager.uninstall(hook_type=hook_type)
+
+
+@hook_app.command("status")
+def hook_status(
+    hook_type: str = typer.Option(
+        "prepare-commit-msg", "--type", "-t", help="Hook type to check"
+    ),
+):
+    """Check git hook installation status."""
+    manager = HookManager()
+    manager.status(hook_type=hook_type)
 
 
 @app.command()

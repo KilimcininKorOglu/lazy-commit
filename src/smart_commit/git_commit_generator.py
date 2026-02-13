@@ -14,8 +14,17 @@ from typing import List, Optional
 import pyperclip
 import tiktoken
 import typer
-from openai import OpenAI, APIConnectionError, AuthenticationError, RateLimitError, APIStatusError
-from openai.types.chat import ChatCompletionSystemMessageParam, ChatCompletionUserMessageParam
+from openai import (
+    OpenAI,
+    APIConnectionError,
+    AuthenticationError,
+    RateLimitError,
+    APIStatusError,
+)
+from openai.types.chat import (
+    ChatCompletionSystemMessageParam,
+    ChatCompletionUserMessageParam,
+)
 from rich.console import Console
 from rich.text import Text
 
@@ -43,19 +52,24 @@ console = Console()
 class GitCommitGenerator:
     """A class to generate git commit messages."""
 
-    def __init__(self, auto_push: bool = False, auto_add: bool = False):
+    def __init__(
+        self, auto_push: bool = False, auto_add: bool = False, hook_mode: bool = False
+    ):
         """
         Initializes the generator. Automatically finds the git repository root.
 
         Args:
             auto_push: Automatically push after commit.
             auto_add: Automatically stage and commit.
+            hook_mode: Output message only for git hook integration.
         """
-        with console.status("[bold green]Initializing GitCommitGenerator..."):
+        self.hook_mode = hook_mode
+
+        if hook_mode:
             self.repo_path = self._find_git_root()
             self.max_context = settings.LAZY_COMMIT_MAX_CONTEXT_SIZE
-            self.auto_push = auto_push
-            self.auto_add = auto_add
+            self.auto_push = False
+            self.auto_add = False
 
             base_url = settings.LAZY_COMMIT_OPENAI_BASE_URL
             self._client = OpenAI(
@@ -64,10 +78,24 @@ class GitCommitGenerator:
                 http_client=get_lan_http_client(base_url) if base_url else None,
             )
             self._model = settings.LAZY_COMMIT_OPENAI_MODEL_NAME
+        else:
+            with console.status("[bold green]Initializing GitCommitGenerator..."):
+                self.repo_path = self._find_git_root()
+                self.max_context = settings.LAZY_COMMIT_MAX_CONTEXT_SIZE
+                self.auto_push = auto_push
+                self.auto_add = auto_add
 
-        console.print(
-            f"[green]✓[/green] GitCommitGenerator initialized for repository: {self.repo_path}"
-        )
+                base_url = settings.LAZY_COMMIT_OPENAI_BASE_URL
+                self._client = OpenAI(
+                    api_key=settings.LAZY_COMMIT_OPENAI_API_KEY.get_secret_value(),
+                    base_url=base_url,
+                    http_client=get_lan_http_client(base_url) if base_url else None,
+                )
+                self._model = settings.LAZY_COMMIT_OPENAI_MODEL_NAME
+
+            console.print(
+                f"[green]✓[/green] GitCommitGenerator initialized for repository: {self.repo_path}"
+            )
 
     @staticmethod
     def _find_git_root() -> Path:
@@ -148,10 +176,13 @@ class GitCommitGenerator:
     def _call_llm_api(self, llm_input: LLMInput) -> CommitMessage | None:
         with console.status("[bold blue]Generating commit message with LLM..."):
             user_prompt = USER_PROMPT_TEMPLATE.format(
-                branch_name=llm_input.git_branch_name, diff_content=llm_input.diff_content
+                branch_name=llm_input.git_branch_name,
+                diff_content=llm_input.diff_content,
             )
             messages = [
-                ChatCompletionSystemMessageParam(role="system", content=SYSTEM_INSTRUCTIONS),
+                ChatCompletionSystemMessageParam(
+                    role="system", content=SYSTEM_INSTRUCTIONS
+                ),
                 ChatCompletionUserMessageParam(role="user", content=user_prompt),
             ]
 
@@ -164,13 +195,17 @@ class GitCommitGenerator:
                     timeout=50,
                 )
             except AuthenticationError:
-                console.print("[red]✗[/red] Invalid API key. Please check LAZY_COMMIT_OPENAI_API_KEY.")
+                console.print(
+                    "[red]✗[/red] Invalid API key. Please check LAZY_COMMIT_OPENAI_API_KEY."
+                )
                 return None
             except RateLimitError:
                 console.print("[red]✗[/red] Rate limited. Please try again later.")
                 return None
             except APIConnectionError:
-                console.print("[red]✗[/red] Network error. Please check your internet connection.")
+                console.print(
+                    "[red]✗[/red] Network error. Please check your internet connection."
+                )
                 return None
             except APIStatusError as e:
                 console.print(f"[red]✗[/red] API error: {e.message}")
@@ -218,7 +253,9 @@ class GitCommitGenerator:
                 console.print(f"[dim]Reading ignore patterns from '{path}'[/dim]")
                 with open(path, "r", encoding="utf8") as f:
                     patterns.extend(
-                        line.strip() for line in f if line.strip() and not line.startswith("#")
+                        line.strip()
+                        for line in f
+                        if line.strip() and not line.startswith("#")
                     )
         return patterns
 
@@ -236,12 +273,16 @@ class GitCommitGenerator:
         try:
             modified_files = self._run_command(["git", "diff", "--name-only", "HEAD"])
             if modified_files.strip():
-                all_files.extend(f.strip() for f in modified_files.split("\n") if f.strip())
+                all_files.extend(
+                    f.strip() for f in modified_files.split("\n") if f.strip()
+                )
         except subprocess.CalledProcessError:
             # Fallback to just unstaged changes if HEAD doesn't exist (initial commit)
             modified_files = self._run_command(["git", "diff", "--name-only"])
             if modified_files.strip():
-                all_files.extend(f.strip() for f in modified_files.split("\n") if f.strip())
+                all_files.extend(
+                    f.strip() for f in modified_files.split("\n") if f.strip()
+                )
 
         # Get untracked files
         try:
@@ -249,7 +290,9 @@ class GitCommitGenerator:
                 ["git", "ls-files", "--others", "--exclude-standard"]
             )
             if untracked_files.strip():
-                all_files.extend(f.strip() for f in untracked_files.split("\n") if f.strip())
+                all_files.extend(
+                    f.strip() for f in untracked_files.split("\n") if f.strip()
+                )
         except subprocess.CalledProcessError:
             pass
 
@@ -282,7 +325,9 @@ class GitCommitGenerator:
             console.print("[yellow]⚠[/yellow] No valid files found for commit.")
             return ""
 
-        console.print(f"[bold blue]📋 Found {len(valid_files)} files with changes:[/bold blue]")
+        console.print(
+            f"[bold blue]📋 Found {len(valid_files)} files with changes:[/bold blue]"
+        )
         console.print()
 
         # Display files with their status
@@ -294,7 +339,9 @@ class GitCommitGenerator:
                 if line.strip():
                     status_code = line[:2]
                     file_path = line[3:].strip()
-                    working_tree_status = status_code[1] if len(status_code) > 1 else status_code[0]
+                    working_tree_status = (
+                        status_code[1] if len(status_code) > 1 else status_code[0]
+                    )
                     if working_tree_status == "?":
                         working_tree_status = "A"
                     file_status_dict[file_path] = working_tree_status
@@ -368,7 +415,9 @@ class GitCommitGenerator:
         if tracked_files:
             try:
                 # Use -- separator to avoid path ambiguity
-                diff_output = self._run_command(["git", "diff", "HEAD", "--"] + tracked_files)
+                diff_output = self._run_command(
+                    ["git", "diff", "HEAD", "--"] + tracked_files
+                )
                 if diff_output:
                     all_diffs.append(diff_output)
             except subprocess.CalledProcessError:
@@ -383,7 +432,9 @@ class GitCommitGenerator:
                     pass
 
                 try:
-                    unstaged_diff = self._run_command(["git", "diff", "--"] + tracked_files)
+                    unstaged_diff = self._run_command(
+                        ["git", "diff", "--"] + tracked_files
+                    )
                     if unstaged_diff:
                         all_diffs.append(unstaged_diff)
                 except subprocess.CalledProcessError:
@@ -394,7 +445,9 @@ class GitCommitGenerator:
             try:
                 file_full_path = self.repo_path / file_path
                 if file_full_path.exists() and file_full_path.is_file():
-                    with open(file_full_path, "r", encoding="utf-8", errors="ignore") as f:
+                    with open(
+                        file_full_path, "r", encoding="utf-8", errors="ignore"
+                    ) as f:
                         content = f.read()
 
                     # Create diff format for new files
@@ -409,7 +462,9 @@ class GitCommitGenerator:
 
                     all_diffs.append(new_file_diff)
             except (UnicodeDecodeError, IOError) as e:
-                console.print(f"[dim]Skipping binary/unreadable file: {file_path} ({e})[/dim]")
+                console.print(
+                    f"[dim]Skipping binary/unreadable file: {file_path} ({e})[/dim]"
+                )
                 # For binary files, add a simple marker
                 new_file_diff = f"diff --git a/{file_path} b/{file_path}\n"
                 new_file_diff += "new file mode 100644\n"
@@ -472,12 +527,12 @@ class GitCommitGenerator:
                     final_diff_parts.append(diff_part)
                     total_len += len_diff_part
                 else:
-                    files_omitted.append(f"- {summary['path']} (content truncated due to size)")
+                    files_omitted.append(
+                        f"- {summary['path']} (content truncated due to size)"
+                    )
 
             if files_omitted:
-                summary_header = (
-                    "\n--- The following files were omitted due to size constraints ---\n"
-                )
+                summary_header = "\n--- The following files were omitted due to size constraints ---\n"
                 final_diff_parts.append(summary_header + "\n".join(files_omitted))
 
             compressed_output = "".join(final_diff_parts)
@@ -521,7 +576,9 @@ class GitCommitGenerator:
         console.print(commit_message.to_rich_panel())
         console.print()
 
-    def _apply_commit(self, commit_message: CommitMessage, llm_input: LLMInput | None = None):
+    def _apply_commit(
+        self, commit_message: CommitMessage, llm_input: LLMInput | None = None
+    ):
         """
         Stages all changed files (including excluded files) and then applies the commit.
         The LLM analysis only considered valid files to avoid noise, but we should commit
@@ -545,7 +602,9 @@ class GitCommitGenerator:
 
                 # Get already staged files
                 try:
-                    staged_files = self._run_command(["git", "diff", "--cached", "--name-only"])
+                    staged_files = self._run_command(
+                        ["git", "diff", "--cached", "--name-only"]
+                    )
                     if staged_files.strip():
                         all_changed_files.extend(
                             f.strip() for f in staged_files.split("\n") if f.strip()
@@ -555,7 +614,9 @@ class GitCommitGenerator:
 
                 # Get modified files (unstaged)
                 try:
-                    modified_files = self._run_command(["git", "diff", "--name-only", "HEAD"])
+                    modified_files = self._run_command(
+                        ["git", "diff", "--name-only", "HEAD"]
+                    )
                     if modified_files.strip():
                         all_changed_files.extend(
                             f.strip() for f in modified_files.split("\n") if f.strip()
@@ -563,10 +624,14 @@ class GitCommitGenerator:
                 except subprocess.CalledProcessError:
                     # Fallback for initial commit
                     try:
-                        modified_files = self._run_command(["git", "diff", "--name-only"])
+                        modified_files = self._run_command(
+                            ["git", "diff", "--name-only"]
+                        )
                         if modified_files.strip():
                             all_changed_files.extend(
-                                f.strip() for f in modified_files.split("\n") if f.strip()
+                                f.strip()
+                                for f in modified_files.split("\n")
+                                if f.strip()
                             )
                     except subprocess.CalledProcessError:
                         pass
@@ -600,10 +665,16 @@ class GitCommitGenerator:
 
                 if final_files:
                     # Show what files will be committed
-                    valid_files = self._get_valid_files()  # Files that were analyzed by LLM
-                    excluded_from_analysis = [f for f in final_files if f not in valid_files]
+                    valid_files = (
+                        self._get_valid_files()
+                    )  # Files that were analyzed by LLM
+                    excluded_from_analysis = [
+                        f for f in final_files if f not in valid_files
+                    ]
 
-                    console.print(f"[dim]Staging {len(final_files)} files for commit:[/dim]")
+                    console.print(
+                        f"[dim]Staging {len(final_files)} files for commit:[/dim]"
+                    )
                     if excluded_from_analysis:
                         console.print(
                             f"[dim]  • {len(valid_files)} files were analyzed by LLM[/dim]"
@@ -634,11 +705,19 @@ class GitCommitGenerator:
                         staged_deleted_set = set()
                         try:
                             staged_deleted = self._run_command(
-                                ["git", "diff", "--cached", "--name-only", "--diff-filter=D"]
+                                [
+                                    "git",
+                                    "diff",
+                                    "--cached",
+                                    "--name-only",
+                                    "--diff-filter=D",
+                                ]
                             )
                             if staged_deleted.strip():
                                 staged_deleted_set = set(
-                                    f.strip() for f in staged_deleted.split("\n") if f.strip()
+                                    f.strip()
+                                    for f in staged_deleted.split("\n")
+                                    if f.strip()
                                 )
                         except subprocess.CalledProcessError:
                             pass
@@ -649,7 +728,9 @@ class GitCommitGenerator:
                             tracked_files = self._run_command(["git", "ls-files"])
                             if tracked_files.strip():
                                 tracked_files_set = set(
-                                    f.strip() for f in tracked_files.split("\n") if f.strip()
+                                    f.strip()
+                                    for f in tracked_files.split("\n")
+                                    if f.strip()
                                 )
                         except subprocess.CalledProcessError:
                             pass
@@ -685,9 +766,13 @@ class GitCommitGenerator:
     def _push_changes(self):
         """Push the committed changes to the remote repository."""
         try:
-            with console.status("[bold magenta]Pushing changes to remote repository..."):
+            with console.status(
+                "[bold magenta]Pushing changes to remote repository..."
+            ):
                 # Get current branch name
-                current_branch = self._run_command(["git", "rev-parse", "--abbrev-ref", "HEAD"])
+                current_branch = self._run_command(
+                    ["git", "rev-parse", "--abbrev-ref", "HEAD"]
+                )
 
                 # Push to origin with the current branch
                 self._run_command(["git", "push", "origin", current_branch])
@@ -706,6 +791,9 @@ class GitCommitGenerator:
     def run(self):
         """Main execution flow."""
         try:
+            if self.hook_mode:
+                return self._run_hook_mode()
+
             console.print("[bold blue]🚀 Starting smart commit process...[/bold blue]")
 
             # 1. Generate prompt data (includes collecting and compressing changes)
@@ -726,5 +814,202 @@ class GitCommitGenerator:
             )
 
         except Exception as e:
-            console.print(f"[red]✗[/red] An unexpected error occurred: {e}", style="red")
+            console.print(
+                f"[red]✗[/red] An unexpected error occurred: {e}", style="red"
+            )
             raise typer.Exit(1)
+
+    def _run_hook_mode(self):
+        """Run in hook mode - output message only, no UI."""
+        try:
+            llm_input = self._generate_prompt_data_silent()
+            if not llm_input:
+                return
+
+            commit_message_obj = self._call_llm_api_silent(llm_input)
+            if not commit_message_obj:
+                return
+
+            print(commit_message_obj.to_git_message())
+        except Exception:
+            pass
+
+    def _generate_prompt_data_silent(self) -> LLMInput | None:
+        """Generate prompt data without UI output."""
+        branch_name = self._run_command(["git", "rev-parse", "--abbrev-ref", "HEAD"])
+        full_diff = self._collect_changes_silent()
+
+        if not full_diff:
+            return None
+
+        compressed_diff = self._compress_context_silent(full_diff)
+
+        return LLMInput(
+            git_branch_name=branch_name,
+            diff_content=compressed_diff,
+            full_diff_for_reference=full_diff,
+        )
+
+    def _collect_changes_silent(self) -> str:
+        """Collect changes without UI output."""
+        valid_files = self._get_valid_files_silent()
+
+        if not valid_files:
+            return ""
+
+        all_diffs = []
+        untracked_files_set = set()
+
+        try:
+            untracked_files = self._run_command(
+                ["git", "ls-files", "--others", "--exclude-standard"]
+            )
+            if untracked_files.strip():
+                untracked_files_set = set(
+                    f.strip() for f in untracked_files.split("\n") if f.strip()
+                )
+        except subprocess.CalledProcessError:
+            pass
+
+        tracked_files = [f for f in valid_files if f not in untracked_files_set]
+        untracked_files_list = [f for f in valid_files if f in untracked_files_set]
+
+        if tracked_files:
+            try:
+                diff_output = self._run_command(
+                    ["git", "diff", "HEAD", "--"] + tracked_files
+                )
+                if diff_output:
+                    all_diffs.append(diff_output)
+            except subprocess.CalledProcessError:
+                pass
+
+        for file_path in untracked_files_list:
+            try:
+                file_full_path = self.repo_path / file_path
+                if file_full_path.exists() and file_full_path.is_file():
+                    with open(
+                        file_full_path, "r", encoding="utf-8", errors="ignore"
+                    ) as f:
+                        content = f.read()
+                    new_file_diff = f"diff --git a/{file_path} b/{file_path}\n"
+                    new_file_diff += "new file mode 100644\n"
+                    new_file_diff += f"+++ b/{file_path}\n"
+                    for line in content.splitlines():
+                        new_file_diff += f"+{line}\n"
+                    all_diffs.append(new_file_diff)
+            except (UnicodeDecodeError, IOError):
+                pass
+
+        return "\n".join(all_diffs) if all_diffs else ""
+
+    def _get_valid_files_silent(self) -> List[str]:
+        """Get valid files without UI output."""
+        ignore_patterns = self._get_ignore_patterns_silent()
+        all_files = []
+
+        try:
+            modified_files = self._run_command(["git", "diff", "--name-only", "HEAD"])
+            if modified_files.strip():
+                all_files.extend(
+                    f.strip() for f in modified_files.split("\n") if f.strip()
+                )
+        except subprocess.CalledProcessError:
+            pass
+
+        try:
+            untracked_files = self._run_command(
+                ["git", "ls-files", "--others", "--exclude-standard"]
+            )
+            if untracked_files.strip():
+                all_files.extend(
+                    f.strip() for f in untracked_files.split("\n") if f.strip()
+                )
+        except subprocess.CalledProcessError:
+            pass
+
+        valid_files = []
+        for file_path in set(all_files):
+            if not self._is_ignored_or_excluded(file_path, ignore_patterns):
+                valid_files.append(file_path)
+
+        return valid_files
+
+    def _get_ignore_patterns_silent(self) -> List[str]:
+        """Get ignore patterns without UI output."""
+        patterns = []
+        for ignore_file in [".gitignore", ".dockerignore"]:
+            path = self.repo_path / ignore_file
+            if path.exists():
+                with open(path, "r", encoding="utf8") as f:
+                    patterns.extend(
+                        line.strip()
+                        for line in f
+                        if line.strip() and not line.startswith("#")
+                    )
+        return patterns
+
+    def _compress_context_silent(self, diff_content: str) -> str:
+        """Compress context without UI output."""
+        len_diff_content = self._count_tokens(diff_content)
+        if len_diff_content <= self.max_context:
+            return diff_content
+
+        file_diffs = re.split(r"(diff --git .*)", diff_content)
+        if file_diffs[0] == "":
+            file_diffs = file_diffs[1:]
+
+        file_summaries = []
+        for i in range(0, len(file_diffs), 2):
+            if i + 1 < len(file_diffs):
+                header = file_diffs[i]
+                content = file_diffs[i + 1]
+                match = re.search(r"b/(.*)", header)
+                if match:
+                    file_path = match.group(1).strip()
+                    file_summaries.append(
+                        {
+                            "path": file_path,
+                            "header": header,
+                            "content": content,
+                            "len": len(header) + len(content),
+                        }
+                    )
+
+        file_summaries.sort(key=lambda x: x["len"])
+
+        final_diff_parts = []
+        total_len = 0
+
+        for summary in file_summaries:
+            diff_part = summary["header"] + summary["content"]
+            len_diff_part = self._count_tokens(diff_part)
+            if total_len + len_diff_part <= self.max_context:
+                final_diff_parts.append(diff_part)
+                total_len += len_diff_part
+
+        return "".join(final_diff_parts)
+
+    def _call_llm_api_silent(self, llm_input: LLMInput) -> CommitMessage | None:
+        """Call LLM API without UI output."""
+        user_prompt = USER_PROMPT_TEMPLATE.format(
+            branch_name=llm_input.git_branch_name, diff_content=llm_input.diff_content
+        )
+        messages = [
+            ChatCompletionSystemMessageParam(
+                role="system", content=SYSTEM_INSTRUCTIONS
+            ),
+            ChatCompletionUserMessageParam(role="user", content=user_prompt),
+        ]
+
+        try:
+            completion = self._client.chat.completions.parse(
+                model=self._model,
+                messages=messages,
+                response_format=CommitMessage,
+                temperature=0,
+                timeout=50,
+            )
+            return completion.choices[0].message.parsed
+        except Exception:
+            return None
