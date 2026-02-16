@@ -43,13 +43,13 @@ class CommitInfo:
 class CommitRewriter:
     def __init__(self):
         self.repo_path = self._find_git_root()
-        base_url = settings.LAZY_COMMIT_OPENAI_BASE_URL
+        base_url = settings.SAGE_OPENAI_BASE_URL
         self._client = OpenAI(
-            api_key=settings.LAZY_COMMIT_OPENAI_API_KEY.get_secret_value(),
+            api_key=settings.SAGE_OPENAI_API_KEY.get_secret_value(),
             base_url=base_url,
             http_client=get_lan_http_client(base_url) if base_url else None,
         )
-        self._model = settings.LAZY_COMMIT_OPENAI_MODEL_NAME
+        self._model = settings.SAGE_OPENAI_MODEL_NAME
 
     @staticmethod
     def _find_git_root() -> Path:

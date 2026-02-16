@@ -74,31 +74,31 @@ class GitCommitGenerator:
 
         if hook_mode:
             self.repo_path = self._find_git_root()
-            self.max_context = settings.LAZY_COMMIT_MAX_CONTEXT_SIZE
+            self.max_context = settings.SAGE_MAX_CONTEXT_SIZE
             self.auto_push = False
             self.auto_add = False
 
-            base_url = settings.LAZY_COMMIT_OPENAI_BASE_URL
+            base_url = settings.SAGE_OPENAI_BASE_URL
             self._client = OpenAI(
-                api_key=settings.LAZY_COMMIT_OPENAI_API_KEY.get_secret_value(),
+                api_key=settings.SAGE_OPENAI_API_KEY.get_secret_value(),
                 base_url=base_url,
                 http_client=get_lan_http_client(base_url) if base_url else None,
             )
-            self._model = settings.LAZY_COMMIT_OPENAI_MODEL_NAME
+            self._model = settings.SAGE_OPENAI_MODEL_NAME
         else:
             with console.status("[bold green]Initializing GitCommitGenerator..."):
                 self.repo_path = self._find_git_root()
-                self.max_context = settings.LAZY_COMMIT_MAX_CONTEXT_SIZE
+                self.max_context = settings.SAGE_MAX_CONTEXT_SIZE
                 self.auto_push = auto_push
                 self.auto_add = auto_add
 
-                base_url = settings.LAZY_COMMIT_OPENAI_BASE_URL
+                base_url = settings.SAGE_OPENAI_BASE_URL
                 self._client = OpenAI(
-                    api_key=settings.LAZY_COMMIT_OPENAI_API_KEY.get_secret_value(),
+                    api_key=settings.SAGE_OPENAI_API_KEY.get_secret_value(),
                     base_url=base_url,
                     http_client=get_lan_http_client(base_url) if base_url else None,
                 )
-                self._model = settings.LAZY_COMMIT_OPENAI_MODEL_NAME
+                self._model = settings.SAGE_OPENAI_MODEL_NAME
 
             console.print(
                 f"[green]✓[/green] GitCommitGenerator initialized for repository: {self.repo_path}"
@@ -210,7 +210,7 @@ class GitCommitGenerator:
                 )
             except AuthenticationError:
                 console.print(
-                    "[red]✗[/red] Invalid API key. Please check LAZY_COMMIT_OPENAI_API_KEY."
+                    "[red]✗[/red] Invalid API key. Please check SAGE_OPENAI_API_KEY."
                 )
                 return None
             except RateLimitError:

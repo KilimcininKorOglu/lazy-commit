@@ -47,20 +47,20 @@ Set the required environment variables:
 
 ```bash
 # For OpenAI API
-export LAZY_COMMIT_OPENAI_BASE_URL="https://api.openai.com/v1"
-export LAZY_COMMIT_OPENAI_API_KEY="your-openai-api-key"
-export LAZY_COMMIT_OPENAI_MODEL_NAME="gpt-4o-mini"
+export SAGE_OPENAI_BASE_URL="https://api.openai.com/v1"
+export SAGE_OPENAI_API_KEY="your-openai-api-key"
+export SAGE_OPENAI_MODEL_NAME="gpt-4o-mini"
 
 # For free models via OpenRouter
-export LAZY_COMMIT_OPENAI_BASE_URL="https://openrouter.ai/api/v1"
-export LAZY_COMMIT_OPENAI_API_KEY="sk-or-v1-xxx"
-export LAZY_COMMIT_OPENAI_MODEL_NAME="moonshotai/kimi-k2:free"
+export SAGE_OPENAI_BASE_URL="https://openrouter.ai/api/v1"
+export SAGE_OPENAI_API_KEY="sk-or-v1-xxx"
+export SAGE_OPENAI_MODEL_NAME="moonshotai/kimi-k2:free"
 
 # Optional: Set maximum context size (default: 32000)
-export LAZY_COMMIT_MAX_CONTEXT_SIZE=32000
+export SAGE_MAX_CONTEXT_SIZE=32000
 
 # Optional: Bypass system proxy for LAN endpoints (default: false)
-export LAZY_COMMIT_BYPASS_PROXY=true
+export SAGE_BYPASS_PROXY=true
 ```
 
 ### Environment File
@@ -68,9 +68,9 @@ export LAZY_COMMIT_BYPASS_PROXY=true
 You can also create a `.env` file in your project root:
 
 ```env
-LAZY_COMMIT_OPENAI_BASE_URL=https://openrouter.ai/api/v1
-LAZY_COMMIT_OPENAI_API_KEY=sk-or-v1-xxx
-LAZY_COMMIT_OPENAI_MODEL_NAME=moonshotai/kimi-k2:free
+SAGE_OPENAI_BASE_URL=https://openrouter.ai/api/v1
+SAGE_OPENAI_API_KEY=sk-or-v1-xxx
+SAGE_OPENAI_MODEL_NAME=moonshotai/kimi-k2:free
 ```
 
 ## Usage
